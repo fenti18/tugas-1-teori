@@ -1,0 +1,56 @@
+# Import library yang diperlukan
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. Definisikan Matriks Transisi
+transition_matrix = np.array([
+    [0.7, 0.3],  # Dari Menggunakan Transportasi Umum (U)
+    [0.4, 0.6]   # Dari Tidak Menggunakan Transportasi Umum (T)
+])
+
+# 2. Definisikan Nama-nama State
+states = ["Menggunakan Transportasi Umum", "Tidak Menggunakan Transportasi Umum"]
+
+# 3. Tentukan Kondisi Awal
+initial_state = np.array([1, 0])  # Misal mulai dari "Menggunakan Transportasi Umum"
+
+# 4. Simulasi Transisi Jangka Panjang
+# Tentukan jumlah hari untuk simulasi
+days = 30
+state_distribution = [initial_state]
+
+for _ in range(days):
+    next_state = np.dot(state_distribution[-1], transition_matrix)
+    state_distribution.append(next_state)
+
+state_distribution = np.array(state_distribution)
+
+# 5. Hitung Kondisi Seimbang (Steady State)
+eig_vals, eig_vecs = np.linalg.eig(transition_matrix.T)
+steady_state = eig_vecs[:, np.isclose(eig_vals, 1)].real
+steady_state /= steady_state.sum()
+
+# 6. Menyusun Tabel Distribusi Probabilitas
+df = pd.DataFrame(state_distribution, columns=states)
+print("Distribusi Kebiasaan Penggunaan Transportasi Umum per Hari:")
+display(df.head(days))  # Menampilkan seluruh baris tabel
+
+# 7. Visualisasi Distribusi Probabilitas Tiap Hari
+plt.figure(figsize=(12, 6))
+for i, state in enumerate(states):
+    plt.plot(df.index, df[state], label=state)
+plt.xlabel("Hari")
+plt.ylabel("Probabilitas")
+plt.title("Distribusi Probabilitas Kebiasaan Penggunaan Transportasi Umum per Hari")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 8. Visualisasi Kondisi Seimbang
+print("Distribusi Steady State:", steady_state.ravel())
+plt.figure(figsize=(8, 6))
+plt.bar(states, steady_state.ravel())
+plt.title("Distribusi Kondisi Seimbang (Steady State)")
+plt.ylabel("Probabilitas")
+plt.show()
